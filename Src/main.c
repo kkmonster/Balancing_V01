@@ -269,16 +269,16 @@ int16_t accelCount[3];  // Stores the 16-bit signed accelerometer sensor output
 int16_t gyroCount[3];   // Stores the 16-bit signed gyro sensor output
 int16_t magCount[3];    // Stores the 16-bit signed magnetometer sensor output
 
-float Sampling = 0;
+float Sampling = 100;
 
 
 // ref
 float yaw_center=0;
 
 // quaternion member
-float q1 = 1; 
-float q2 = 1; 
-float q3 = 1; 
+float q1 = 0; 
+float q2 = 0; 
+float q3 = 0; 
 float q4 = 1; 
 
 // euler anglr
@@ -305,24 +305,24 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-void writeByte(uint8_t slaveAddr, uint8_t regAddr, uint8_t data);
-uint8_t readByte(uint8_t address, uint8_t subAddress);
-void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest);
-float Smooth_filter(float alfa, float new_data, float prev_data);
-void readAccelData(int16_t * destination);
-void readGyroData(int16_t * destination);
-void readMagData(int16_t * destination);
-int16_t readTempData();
-void initAK8963();
-void initMPU9250();
-void motor_drive(float motorA, float motorB);
-void init_mpu();
-void init_pin();
-void motor_disable();
-void read_mpu();
-void Ahrs();
-void PID_controller();
-void Sampling_do();
+volatile void writeByte(uint8_t slaveAddr, uint8_t regAddr, uint8_t data);
+volatile uint8_t readByte(uint8_t address, uint8_t subAddress);
+volatile void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest);
+volatile float Smooth_filter(float alfa, float new_data, float prev_data);
+volatile void readAccelData(int16_t * destination);
+volatile void readGyroData(int16_t * destination);
+volatile void readMagData(int16_t * destination);
+volatile int16_t readTempData(void);
+volatile void initAK8963(void);
+volatile void initMPU9250(void);
+volatile void motor_drive(float motorA, float motorB);
+volatile void init_mpu(void);
+volatile void init_pin(void);
+volatile void motor_disable(void);
+volatile void read_mpu(void);
+volatile void Ahrs(void);
+volatile void PID_controller(void);
+volatile void Sampling_do(void);
 
 /* USER CODE END PFP */
 
@@ -362,10 +362,17 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_TIMEx_PWMN_Start(&htim3, TIM_CHANNEL_1);
+  HAL_TIMEx_PWMN_Start(&htim3, TIM_CHANNEL_2);
+  HAL_TIM_Base_Start_IT(&htim17);
+  
   while (1)
   {
+	  
+	  
+		HAL_Delay(0xffffffff);
   /* USER CODE END WHILE */
-		Sampling_do();
+
   /* USER CODE BEGIN 3 */
 
   }
@@ -489,9 +496,9 @@ void MX_TIM17_Init(void)
 {
 
   htim17.Instance = TIM17;
-  htim17.Init.Prescaler = 0;
+  htim17.Init.Prescaler = 47;
   htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim17.Init.Period = 0;
+  htim17.Init.Period = 9999;
   htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim17.Init.RepetitionCounter = 0;
   HAL_TIM_Base_Init(&htim17);
@@ -557,31 +564,30 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void Sampling_do()
+volatile void Sampling_do(void)
 {
+	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_1, GPIO_PIN_SET);
 	read_mpu();
-	
-	HAL_Delay(30);
-//  Ahrs();
+	Ahrs();
 
-//  PID_controller();
-//  motor_disable();
-//  motor_drive(motor_A, motor_B);
+  PID_controller();
+  motor_disable();
+  motor_drive(motor_A, motor_B);
 
-	a1=accelCount[0]; 
-	a2=accelCount[1]; 
-	a3=accelCount[2]; 
-	g1=gyroCount[0]; 
-	g2=gyroCount[1]; 
-	g3=gyroCount[2]; 
-	m1=magCount[0];
-	m2=magCount[1];
-	m3=magCount[2];
+// a1=accelCount[0]; 
+// a2=accelCount[1]; 
+// a3=accelCount[2]; 
+// g1=gyroCount[0]; 
+// g2=gyroCount[1]; 
+// g3=gyroCount[2]; 
+// m1=magCount[0];
+// m2=magCount[1];
+// m3=magCount[2];
 	
-	HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_1);
+	HAL_GPIO_WritePin(GPIOF, GPIO_PIN_1, GPIO_PIN_RESET);
 }
 
-void PID_controller()
+volatile void PID_controller(void)
 {
   float Buf_D_Error_yaw   =Error_yaw;
   float Buf_D_Errer_pitch =Errer_pitch;
@@ -616,16 +622,16 @@ void PID_controller()
   motor_B = Del_pitch  +Del_yaw ;
 }
 
-void Ahrs()
+volatile void Ahrs(void)
 {
   // quaternion base process 
   float Norm;
-  float ax = accelCount[0];
-  float ay = accelCount[1];
-  float az = accelCount[2];
-  float gx =((gyroCount[0]-gx_diff)/ GYROSCOPE_SENSITIVITY )*M_PI/180.0f ;
-  float gy =((gyroCount[1]-gy_diff)/ GYROSCOPE_SENSITIVITY )*M_PI/180.0f ;
-  float gz =((gyroCount[2]-gz_diff)/ GYROSCOPE_SENSITIVITY )*M_PI/180.0f ;
+  float ax = (float)accelCount[0];
+  float ay = (float)accelCount[1];
+  float az = (float)accelCount[2];
+  float gx =(((float)gyroCount[0]-gx_diff)/ GYROSCOPE_SENSITIVITY )*M_PI/180.0f ;
+  float gy =(((float)gyroCount[1]-gy_diff)/ GYROSCOPE_SENSITIVITY )*M_PI/180.0f ;
+  float gz =(((float)gyroCount[2]-gz_diff)/ GYROSCOPE_SENSITIVITY )*M_PI/180.0f ;
 
   
   float q1_dot = 0.5f * (-q2 * gx - q3 * gy - q4 * gz);
@@ -691,14 +697,14 @@ void Ahrs()
   q_yaw   += gz/Sampling * 180.0f / M_PI ;
 }
 
-void read_mpu()
+volatile void read_mpu(void)
 {
   readAccelData(accelCount);  // Read the x/y/z adc values
   readGyroData(gyroCount);  // Read the x/y/z adc values
-  readMagData(magCount);  // Read the x/y/z adc values
+  // readMagData(magCount);  // Read the x/y/z adc values
 }
 
-void motor_drive(float motorA, float motorB)
+volatile void motor_drive(float motorA, float motorB)
 {
   if (motorA > 0)
   {
@@ -732,26 +738,26 @@ void motor_drive(float motorA, float motorB)
 	TIM3 ->CCR2 = motorB ;
 }
 
-void init_mpu()
+volatile void init_mpu(void)
 {
   HAL_Delay(100);
   initMPU9250(); 
-  initAK8963();
+// initAK8963();
 }
 
-void motor_disable()
+volatile void motor_disable(void)
 {
   motor_A = 0;
   motor_B = 0;
 }
 
-float Smooth_filter(float alfa, float new_data, float prev_data)
+volatile float Smooth_filter(float alfa, float new_data, float prev_data)
 {
   float output = prev_data + (alfa * (new_data - prev_data));
   return output;
 }
 
-void readAccelData(int16_t * destination)
+volatile void readAccelData(int16_t * destination)
 {
   uint8_t rawData[6];  // x/y/z accel register data stored here
   readBytes(MPU9250_ADDRESS, ACCEL_XOUT_H, 6, rawData);  // Read the six raw data registers into data array
@@ -760,7 +766,7 @@ void readAccelData(int16_t * destination)
   destination[2] = ((int16_t)rawData[4] << 8) | rawData[5] ; 
 }
 
-void readGyroData(int16_t * destination)
+volatile void readGyroData(int16_t * destination)
 {
   uint8_t rawData[6];  // x/y/z gyro register data stored here
   readBytes(MPU9250_ADDRESS, GYRO_XOUT_H, 6, rawData);  // Read the six raw data registers sequentially into data array
@@ -769,7 +775,7 @@ void readGyroData(int16_t * destination)
   destination[2] = ((int16_t)rawData[4] << 8) | rawData[5] ; 
 }
 
-void readMagData(int16_t * destination)
+volatile void readMagData(int16_t * destination)
 {
   uint8_t rawData[7];  // x/y/z gyro register data, ST2 register stored here, must read ST2 at end of data acquisition
   if(readByte(AK8963_ADDRESS, AK8963_ST1) & 0x01) { // wait for magnetometer data ready bit to be set
@@ -783,17 +789,16 @@ void readMagData(int16_t * destination)
   }
 }
 
-int16_t readTempData()
+volatile int16_t readTempData(void)
 {
   uint8_t rawData[2];  // x/y/z gyro register data stored here
   readBytes(MPU9250_ADDRESS, TEMP_OUT_H, 2, &rawData[0]);  // Read the two raw data registers sequentially into data array 
   return ((int16_t)rawData[0] << 8) | rawData[1] ;  // Turn the MSB and LSB into a 16-bit value
 }
        
-void initAK8963()
+volatile void initAK8963(void)
 {
   // First extract the factory calibration for each magnetometer axis
-  uint8_t rawData[3];  // x/y/z gyro calibration data stored here
   writeByte(AK8963_ADDRESS, AK8963_CNTL, 0x00); // Power down magnetometer  
   HAL_Delay(10);
   writeByte(AK8963_ADDRESS, AK8963_CNTL, 0x0F); // Enter Fuse ROM access mode
@@ -807,7 +812,7 @@ void initAK8963()
   HAL_Delay(10);
 }
 
-void initMPU9250()
+volatile void initMPU9250(void)
 {  
    // wake up device
     writeByte(MPU9250_ADDRESS, PWR_MGMT_1, 0x00); // Clear sleep mode bit (6), enable all sensors 
@@ -863,19 +868,19 @@ void initMPU9250()
      HAL_Delay(100);
 }
 
-void writeByte(uint8_t slaveAddr, uint8_t regAddr, uint8_t data)
+volatile void writeByte(uint8_t slaveAddr, uint8_t regAddr, uint8_t data)
 {
     HAL_I2C_Mem_Write(&hi2c1,slaveAddr,regAddr,1,&data,1,1);
 }
 
-uint8_t readByte(uint8_t address, uint8_t subAddress)
+volatile uint8_t readByte(uint8_t address, uint8_t subAddress)
 {
 	uint8_t data; // `data` will store the register data   
 	HAL_I2C_Mem_Read(&hi2c1,address,subAddress, 1,&data, 1, 1);
 	return data;                             // Return data read from slave register
 }
 
-void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest)
+volatile void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest)
 {
 	HAL_I2C_Mem_Read(&hi2c1,address,subAddress, 1, dest, count, 1);
 }
