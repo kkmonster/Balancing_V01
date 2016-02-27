@@ -1,0 +1,28 @@
+
+T0B98 000:273 SEGGER J-Link V4.92 Log File (0000ms, 0264ms total)
+T0B98 000:273 DLL Compiled: Sep 30 2014 09:33:42 (0000ms, 0264ms total)
+T0B98 000:273 Logging started @ 2015-07-23 02:37 (0000ms, 0264ms total)
+T0B98 000:273 JLINK_SetWarnOutHandler(...) (0000ms, 0264ms total)
+T0B98 000:273 JLINK_OpenEx(...)
+Firmware: J-Link ARM V8 compiled Nov 28 2014 13:44:46
+Hardware: V8.00
+S/N: 99999994
+Feature(s): RDI,FlashDL,FlashBP,JFlash,GDBFULL  returns O.K. (0260ms, 0524ms total)
+T0B98 000:533 JLINK_SetErrorOutHandler(...) (0000ms, 0524ms total)
+T0B98 000:533 JLINK_ExecCommand("ProjectFile = "D:\Git\stm32f030_bbot\MDK-ARM\JLinkSettings.ini"", ...)  returns 0x00 (0000ms, 0524ms total)
+T0B98 000:537 JLINK_ExecCommand("Device = STM32F030F4", ...)Device "STM32F030F4" selected (16 KB flash, 4 KB RAM).  returns 0x00 (0003ms, 0527ms total)
+T0B98 000:541 JLINK_ExecCommand("DisableConnectionTimeout", ...)  returns 0x01 (0000ms, 0528ms total)
+T0B98 000:541 JLINK_GetHardwareVersion()  returns 0x13880 (0000ms, 0528ms total)
+T0B98 000:541 JLINK_GetDLLVersion()  returns 49200 (0000ms, 0528ms total)
+T0B98 000:541 JLINK_GetFirmwareString(...) (0000ms, 0528ms total)
+T0B98 000:544 JLINK_GetDLLVersion()  returns 49200 (0000ms, 0528ms total)
+T0B98 000:544 JLINK_GetCompileDateTime() (0000ms, 0528ms total)
+T0B98 000:545 JLINK_GetFirmwareString(...) (0001ms, 0529ms total)
+T0B98 000:547 JLINK_GetHardwareVersion()  returns 0x13880 (0000ms, 0529ms total)
+T0B98 000:552 JLINK_TIF_Select(JLINKARM_TIF_SWD)  returns 0x00 (0001ms, 0530ms total)
+T0B98 000:553 JLINK_SetSpeed(10000) (0000ms, 0530ms total)
+T0B98 000:553 JLINK_GetId() >0x108 TIF> >0x108 TIF>STM32F0xxx: Can not connect to CPU. Trying connect under reset. >0x108 TIF> >0x108 TIF>
+  ***** Error: STM32F0xxx: Connecting to CPU via connect under reset failed.  returns 0x00000000 (0509ms, 1039ms total)
+T0B98 001:697 JLINK_Close() (0000ms, 1039ms total)
+T0B98 001:697  (0000ms, 1039ms total)
+T0B98 001:697 Closed (0000ms, 1039ms total)
